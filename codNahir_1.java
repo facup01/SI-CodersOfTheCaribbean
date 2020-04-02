@@ -10,8 +10,15 @@ class Player {
     public static double obtenerDistancia(Barco barco, Barril barril) {
         // La distancia entre un vector A(x1,y1) y B(x2,y2) es
         // AB=raiz((x2-x1)^2+(y2-y1)^2)
-        final double dist = Math
-                .sqrt((barril.getPosX() - barco.getPosX()) ^ 2 + (barril.getPosY() - barco.getPosY()) ^ 2);
+      //  System.err.println("ObtenerDistancia");
+        //barco.mostrarBarco();
+        //barril.mostrarBarril();
+        
+       // double dist = Math.sqrt((barril.getPosX() - barco.getPosX()) ^ 2 + (barril.getPosY() - barco.getPosY()) ^ 2);
+            double dist= (Math.abs(barco.getPosY() - barril.getPosY()) + Math.abs(barco.getPosY() + barco.getPosX() - barril.getPosY()- barril.getPosX()) + Math.abs(barco.getPosX() - barril.getPosX())) / 2;
+    
+      //  System.err.println("Distancia: "+dist);
+       
         return dist;
 
     }
@@ -21,13 +28,19 @@ class Player {
         double dist;
         Barril mejorBarril=new Barril();
         int longBarriles = barriles.size();
+        System.err.println("LongBarriles: "+longBarriles);
         for (int barril = 0; barril < longBarriles; barril++) { // recorremos el array de barriles
             dist = obtenerDistancia(barco, barriles.get(barril));
+       //     System.err.println("Distancia: "+dist + "MenorDistancia: "+ minDistancia);
+       
             if (dist < minDistancia) {
                 minDistancia = dist;
                 mejorBarril = barriles.get(barril);
+               // System.err.println("Mejor Barril");
+                
             }
         }
+        mejorBarril.mostrarBarril();
         return mejorBarril;
     }
 
@@ -51,19 +64,26 @@ class Player {
                 int arg4 = in.nextInt();
                 if (entityType.equals("SHIP")) {
                     Barco b = new Barco(entityId, entityType, x, y, arg1, arg2, arg3, arg4);
+                    
+                    b.mostrarBarco();
                     barcos.add(b);
                 }
                 if (entityType.equals("BARREL")) {
                     Barril ba = new Barril(entityId, entityType, x, y, arg1);
+                    ba.mostrarBarril();
                     barriles.add(ba);
                 }
 
             }
         
             for (int i = 0; i < myShipCount; i++) {
+                System.err.println("myShipCount"+myShipCount+" i:"+i); 
                 Barril mejorBarril = obtenerElBarrilCercano(barcos.get(i),barriles);
                 int x= mejorBarril.getPosX();
                 int y= mejorBarril.getPosY();
+                
+                barriles.remove(mejorBarril);
+                System.err.println("Se mueve "+ x + " " + y);
                
                 System.out.println("MOVE " + x + " " + y);
             }
@@ -98,6 +118,11 @@ class Player {
         public int getPosY() {
             return this.y;
         }
+        
+        public void mostrarBarco (){
+            System.err.println("Barco " + this.entityId +" X:"+this.x+" Y:"+this.y+" Arg1:"+
+            this.arg1+" Arg2:"+this.arg2+" Arg3:"+this.arg3+" Arg4:"+this.arg4);
+            }
 
     }
 
@@ -131,6 +156,11 @@ class Player {
         public int getPosY() {
             return this.y;
         }
+        
+        public void mostrarBarril (){
+            System.err.println("Barril " + this.entityId +" X:"+this.x+" Y:"+this.y+" Arg1:"+
+            this.arg1);
+            }
 
         
 
