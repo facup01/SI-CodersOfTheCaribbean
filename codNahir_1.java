@@ -7,15 +7,12 @@ import java.math.*;
  * according to the problem statement.
  **/
 class Player {
+   
+
     public static double obtenerDistancia(Barco barco, Barril barril) {
-        // La distancia entre un vector A(x1,y1) y B(x2,y2) es
-        // AB=raiz((x2-x1)^2+(y2-y1)^2)
-      //  System.err.println("ObtenerDistancia");
-        //barco.mostrarBarco();
-        //barril.mostrarBarril();
-        
-       // double dist = Math.sqrt((barril.getPosX() - barco.getPosX()) ^ 2 + (barril.getPosY() - barco.getPosY()) ^ 2);
             double dist= (Math.abs(barco.getPosY() - barril.getPosY()) + Math.abs(barco.getPosY() + barco.getPosX() - barril.getPosY()- barril.getPosX()) + Math.abs(barco.getPosX() - barril.getPosX())) / 2;
+            //double cantRon= barco.obtenerRon();
+          //  double heuristica=dist-cantRon;
     
       //  System.err.println("Distancia: "+dist);
        
@@ -24,6 +21,12 @@ class Player {
     }
 
     public static Barril obtenerElBarrilCercano(Barco barco, ArrayList<Barril> barriles) {
+        /*Hill Climbing:
+    Actual<- Barco, lista de barriles
+    Hasta recorrer todos los barriles
+    Eligo el que tenga menor distancia
+    Fin
+    */
         double minDistancia = 10000;
         double dist;
         Barril mejorBarril=new Barril();
@@ -32,13 +35,14 @@ class Player {
         for (int barril = 0; barril < longBarriles; barril++) { // recorremos el array de barriles
             dist = obtenerDistancia(barco, barriles.get(barril));
        //     System.err.println("Distancia: "+dist + "MenorDistancia: "+ minDistancia);
-       
+       //Tengo que agarrar el barril que menor ron tenga para dejar los que mayor tengan para dsp
             if (dist < minDistancia) {
                 minDistancia = dist;
                 mejorBarril = barriles.get(barril);
                // System.err.println("Mejor Barril");
                 
             }
+            
         }
         mejorBarril.mostrarBarril();
         return mejorBarril;
@@ -90,13 +94,32 @@ class Player {
         }
     }
 
+    public static class Mapa {
+        int ejeX;
+        int ejeY;
+        int ejeZ;
+
+        public Mapa(){
+            this.ejeX=0;
+            this.ejeY=0;
+            this.ejeZ=0;
+        }
+        
+        public void axial_to_cube(q,r){
+            this.ejeX=q;
+            this.ejeZ=r;
+            this.ejeY=- this.ejeX - this.ejeZ;
+
+        }
+    }
+
     public static class Barco {
         int entityId;
         String entityType;
         int x;
         int y;
-        int arg1;// Orientacion de rotacion
-        int arg2;// Velocidad barco
+        int arg1;// Orientacion de rotacion entre 0 and 5
+        int arg2;// Velocidad barco entre 0 y 2
         int arg3;// Stock de ron barco
         int arg4;// 1 si controlo barco, 0 si no
 
@@ -156,13 +179,57 @@ class Player {
         public int getPosY() {
             return this.y;
         }
+        public int obtenerRon() {
+            return this.arg1;
+        }
+        
         
         public void mostrarBarril (){
             System.err.println("Barril " + this.entityId +" X:"+this.x+" Y:"+this.y+" Arg1:"+
             this.arg1);
             }
 
+    }
+
+    public static class BalaCañon {
+  
+        int entityId;
+        String entityType; //CANNONBALL
+        int x;
+        int y;
+        int arg1;// el ID de entidad de la nave que disparó esta bola de cañón
+        int arg2;//el número de vueltas antes del impacto (1 significa que la bala de cañón aterrizará al final del turno actual)
+      
+        public BalaCañon(int id, String tipo, int x, int y, int arg1, int arg2) {
+            this.entityId = id;
+            this.entityType = tipo;
+            this.x = x;
+            this.y = y;
+            this.arg1 = arg1;
+            this.arg2 = arg2;
+          
+        }
+
+        public int getPosX() {
+            return this.x;
+        }
+
+        public int getPosY() {
+            return this.y;
+        }
         
+        public void mostrarBalaCañon (){
+            System.err.println("BalaCañon " + this.entityId +" X:"+this.x+" Y:"+this.y+" Arg1:"+
+            this.arg1+" Arg2:"+this.arg2);
+    }
+            
+    public static class Mina {
+  
+        String entityType; //MINE
+       
+        public Mina(String tipo) {
+            this.entityType = tipo;
+          
+        }
 
     }
-}
