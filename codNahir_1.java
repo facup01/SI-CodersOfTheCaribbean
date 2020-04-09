@@ -6,21 +6,83 @@ import java.math.*;
  * Auto-generated code below aims at helping you parse the standard input
  * according to the problem statement.
  **/
+
+public static class Mapa {
+    int x;
+    int y;
+    int z;
+
+    public Mapa(){
+        this.x=0;
+        this.y=0;
+        this.z=0;
+    }
+
+    public Mapa(int x,int y, int z){
+        this.x=x;
+        this.y=y;
+        this.z=z;
+    }
+
+    public int getPosX() {
+        return this.x;
+    }
+
+    public int getPosY() {
+        return this.y;
+    }
+    public int getPosZ() {
+        return this.z;
+    }
+
+    
+}
+
 class Player {
    
+    /*Como la grilla es offset odd-r, la convertimos a cubo.
+    function oddr_to_cube(hex):
+        var x = hex.col - (hex.row - (hex.row&1)) / 2
+        var z = hex.row
+        var y = -x-z
+        return Cube(x, y, z)
+    */
+    public static Mapa oddr_to_cube(int fila, int col){
+        int ejeX= col - (fila-(fila&1))/2;
+        int ejeZ=fila;
+        int ejeY=- this.ejeX - this.ejeZ;
+        Mapa m= new Mapa(ejeX,ejeY,ejeZ);
+        return m;
+    }
 
-    public static double obtenerDistancia(Barco barco, Barril barril) {
-            double dist= (Math.abs(barco.getPosY() - barril.getPosY()) + Math.abs(barco.getPosY() + barco.getPosX() - barril.getPosY()- barril.getPosX()) + Math.abs(barco.getPosX() - barril.getPosX())) / 2;
-            //double cantRon= barco.obtenerRon();
-          //  double heuristica=dist-cantRon;
+    public static double offset_distance(int x, int y, int x1, int y1) {
+         /*convertiremos las coordenadas de desplazamiento en coordenadas de cubo, luego usaremos la distancia del cubo.
+    function offset_distance(a, b):
+    var ac = offset_to_cube(a)
+    var bc = offset_to_cube(b)
+    return cube_distance(ac, bc)*/
+        Mapa ac= oddr_to_cube(x,y);
+        void bc= oddr_to_cube(x1,y1);
+        return this.obtenerDistancia(ac,bc);
+    }
+
+    public static double obtenerDistancia(Mapa a, Mapa b) {
+         /*function cube_distance(a, b):
+    return (abs(a.x - b.x) + abs(a.y - b.y) + abs(a.z - b.z)) / 2   
+            */
     
-      //  System.err.println("Distancia: "+dist);
+    double dist= (Math.abs(a.getPosX() - b.getPosX()) + 
+            Math.abs(a.getPosY() - b.getPosY()) 
+            + Math.abs(a.getPosZ() - b.getPosZ())) / 2;
+
+            System.err.println("Distancia: "+dist);
        
         return dist;
 
     }
 
-    public static Barril obtenerElBarrilCercano(Barco barco, ArrayList<Barril> barriles) {
+
+    public static Barril obtenerElBarrilCercano(Barco miBarco, ArrayList<Barril> barriles) {
         /*Hill Climbing:
     Actual<- Barco, lista de barriles
     Hasta recorrer todos los barriles
@@ -31,14 +93,13 @@ class Player {
         double dist;
         Barril mejorBarril=new Barril();
         int longBarriles = barriles.size();
-        System.err.println("LongBarriles: "+longBarriles);
-        for (int barril = 0; barril < longBarriles; barril++) { // recorremos el array de barriles
-            dist = obtenerDistancia(barco, barriles.get(barril));
-       //     System.err.println("Distancia: "+dist + "MenorDistancia: "+ minDistancia);
-       //Tengo que agarrar el barril que menor ron tenga para dejar los que mayor tengan para dsp
+        for (int i = 0; i < longBarriles; i++) {
+            Barril barril= barriles.get(i); // recorremos el array de barriles
+            dist =  offset_distance(miBarco.getPosX(),miBarco.getPosY(), barril.getPosX(),barril.getPosY());
+            System.err.println("Distancia: "+dist + "MenorDistancia: "+ minDistancia);
             if (dist < minDistancia) {
                 minDistancia = dist;
-                mejorBarril = barriles.get(barril);
+                mejorBarril = barril;
                // System.err.println("Mejor Barril");
                 
             }
@@ -48,10 +109,30 @@ class Player {
         return mejorBarril;
     }
 
+    public static Barco obtenerElBarcoMasCercano(ArrayList<Barco> barcos, Barco miBarco) { //Método para disparar
+        Barco mejorBarco=new Barco();
+        int longBarcos = barcos.size();
+        for (int i = 0; i < longBarcos; i++) { // recorremos el array de barcos
+            Barco otroBarco = barcos.get(barco);
+            if (otroBarco.getArg_4 == 0){ //Es el barco de mi oponente
+                double dist= offset_distance(miBarco.getPosX(),miBarco.getPosY(), otroBarco.getPosX(),otroBarco.getPosY());
+                if (dist<10){
+                    mejorBarco=otroBarco;
+                    mejorBarco.mostrarBarco();
+              
+                }
+
+            }
+        
+        }
+        return mejorBarco;
+    }
+
     public static void main(String args[]) {
         Scanner in = new Scanner(System.in);
         ArrayList<Barril> barriles = new ArrayList<Barril>();
         ArrayList<Barco> barcos = new ArrayList<Barco>();
+        ArrayList<Mapa> mapas= new ArrayList<Mapa>();
 
         while (true) {
             int myShipCount = in.nextInt();// cantidad de barcos que tengo controlados
@@ -68,56 +149,54 @@ class Player {
                 int arg4 = in.nextInt();
                 if (entityType.equals("SHIP")) {
                     Barco b = new Barco(entityId, entityType, x, y, arg1, arg2, arg3, arg4);
-                    
+                    Mapa m = oddr_to_cube(x, y); //Paso a cubo el barco (?)
                     b.mostrarBarco();
                     barcos.add(b);
+                    mapas.add(m);
                 }
                 if (entityType.equals("BARREL")) {
                     Barril ba = new Barril(entityId, entityType, x, y, arg1);
+                    Mapa m= oddr_to_cube(x, y);
                     ba.mostrarBarril();
                     barriles.add(ba);
+                    mapas.add(m);
                 }
 
             }
         
+            
+           
             for (int i = 0; i < myShipCount; i++) {
                 System.err.println("myShipCount"+myShipCount+" i:"+i); 
                 Barril mejorBarril = obtenerElBarrilCercano(barcos.get(i),barriles);
-                int x= mejorBarril.getPosX();
-                int y= mejorBarril.getPosY();
+                Barco barcoMasCerca = obtenerElBarcoMasCercano(barcos, barcos.get(i));
+             
+                int barrilX= mejorBarril.getPosX();
+                int barrilY= mejorBarril.getPosY();
+                int barcoX= barcoMasCerca.getPosX();
+                int barcoY= barcoMasCerca.getPosY();
                 
                 barriles.remove(mejorBarril);
-                System.err.println("Se mueve "+ x + " " + y);
+                System.err.println("Se mueve "+ barrilX + " " + barrilY);
                
-                System.out.println("MOVE " + x + " " + y);
+                System.out.println("MOVE " + barrilX + " " + barrilY);
+              
+                System.err.println("Dispara "+ barcoX + " " + barcoY);
+                
+                System.out.println("FIRE " + barcoX + " " + barcoY);
             }
         }
     }
 
-    public static class Mapa {
-        int ejeX;
-        int ejeY;
-        int ejeZ;
-
-        public Mapa(){
-            this.ejeX=0;
-            this.ejeY=0;
-            this.ejeZ=0;
-        }
-        
-        public void axial_to_cube(q,r){
-            this.ejeX=q;
-            this.ejeZ=r;
-            this.ejeY=- this.ejeX - this.ejeZ;
-
-        }
-    }
 
     public static class Barco {
         int entityId;
         String entityType;
         int x;
         int y;
+        int cubox;
+        int cuboy;
+        int cuboz;
         int arg1;// Orientacion de rotacion entre 0 and 5
         int arg2;// Velocidad barco entre 0 y 2
         int arg3;// Stock de ron barco
@@ -141,6 +220,10 @@ class Player {
         public int getPosY() {
             return this.y;
         }
+        public int getArg_4() {
+            return this.arg4;
+        }
+
         
         public void mostrarBarco (){
             System.err.println("Barco " + this.entityId +" X:"+this.x+" Y:"+this.y+" Arg1:"+
