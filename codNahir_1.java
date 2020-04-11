@@ -126,6 +126,7 @@ class Player {
             Barril barril= barriles.get(i); // recorremos el array de barriles
             dist =  offset_distance(miBarco.getPosX(),miBarco.getPosY(), barril.getPosX(),barril.getPosY());
             System.err.println("Distancia: "+dist + "MenorDistancia: "+ minDistancia);
+
             if (dist < minDistancia) {
                 minDistancia = dist;
                 mejorBarril = barril;    
@@ -192,7 +193,7 @@ class Player {
            
             for (int i = 0; i < myShipCount; i++) {
                 System.err.println("myShipCount"+myShipCount+" i:"+i); 
-                Barril mejorBarril = obtenerElBarrilCercano(barcos.get(i),barriles);
+                Barril mejorBarrilCubo = obtenerElBarrilCercano(barcos.get(i),barriles);
                 Barco barcoMasCerca = obtenerElBarcoMasCercano(barcos, barcos.get(i));
              
                 int barrilX= mejorBarril.getPosX();
@@ -200,7 +201,7 @@ class Player {
                 int barcoX= barcoMasCerca.getPosX();
                 int barcoY= barcoMasCerca.getPosY();
                 
-                barriles.remove(mejorBarril);
+                barriles.clear();
                 System.err.println("Se mueve "+ barrilX + " " + barrilY);
                
                 System.out.println("MOVE " + barrilX + " " + barrilY);
