@@ -23,8 +23,8 @@ class Player {
 		
 		
 		while (true) {
-			int myShipCount = in.nextInt(); // the number of remaining ships
-			int entityCount = in.nextInt(); // the number of entities (e.g. ships, mines or cannonballs)
+			int myShipCount = in.nextInt();// cantidad de barcos que tengo controlados
+			int entityCount = in.nextInt(); // cantidad de objetos en total
 			int indiceBarco = 0;
 
 			barcos = new Barco[myShipCount];
@@ -41,9 +41,12 @@ class Player {
 
 				if (entityType.equals("SHIP")) {
 					if (indiceBarco < barcos.length) {
+						
+						System.err.println("Longitud barco "+barcos.length);
+
 						System.err.println("indiceBarco "+indiceBarco);
 
-						barcos[indiceBarco] = new Barco(entityId, x, y, arg1, arg2, arg3, arg4);
+						barcos[indiceBarco] = new Barco(entityId,entityType, x, y, arg1, arg2, arg3, arg4);
 						indiceBarco++;
 					} else {
 						for (int k = 0; i < barcos.length; k++) {
@@ -59,17 +62,17 @@ class Player {
 				}
 				
 				if (entityType.equals("BARREL")) {
-					Barril unBarril = new Barril(entityId, x, y, arg1, arg2, arg3, arg4);
+					Barril unBarril = new Barril(entityId,entityType, x, y, arg1);
 					listaBarriles.add(unBarril);
 				}
 				
 				if (entityType.equals("MINE")) {
-					Mina unaMina= new Mina(entityId, x, y, arg1, arg2, arg3, arg4);
+					Mina unaMina= new Mina(entityId,entityType,x,y);
 					listaMinas.add(unaMina);
 				}
 				
 				if (entityType.equals("CANNONBALL")) {
-					unaBalaDisparada= new Cannonball(entityId, x, y, arg1, arg2, arg3, arg4);
+					unaBalaDisparada= new Cannonball(entityId,entityType, x, y, arg1, arg2);
 				}
 				
 			} // Fin for entityCount
@@ -254,6 +257,7 @@ class Player {
 
 	public static class Barco {
 		int entityId;
+		String entityType;
 		int x;
 		int y;
 		int arg1;// Orientacion de rotacion
@@ -261,15 +265,16 @@ class Player {
 		int arg3;// Stock de ron barco
 		int arg4;// 1 si controlo barco, 0 si no
 
-		public Barco(int id, int x, int y, int arg1, int arg2, int arg3, int arg4) {
-			this.entityId = id;
-			this.x = x;
-			this.y = y;
-			this.arg1 = arg1;
-			this.arg2 = arg2;
-			this.arg3 = arg3;
-			this.arg4 = arg4;
-		}
+	    public Barco(int id, String tipo, int x, int y, int arg1, int arg2, int arg3, int arg4) {
+            this.entityId = id;
+            this.entityType = tipo;
+            this.x = x;
+            this.y = y;
+            this.arg1 = arg1;
+            this.arg2 = arg2;
+            this.arg3 = arg3;
+            this.arg4 = arg4;
+        }
 
 		public void moverBarco(int xNuevo, int yNuevo) {
 			System.out.println("MOVE " + xNuevo + " " + yNuevo);
@@ -291,27 +296,34 @@ class Player {
 		public int getId() {
 			return this.entityId;
 		}
+		public int getArg_4() {
+            return this.arg4;
+        }
+
+        public void mostrarBarco (){
+            System.err.println("Barco " + this.entityId +" X:"+this.x+" Y:"+this.y+" Arg1:"+
+            this.arg1+" Arg2:"+this.arg2+" Arg3:"+this.arg3+" Arg4:"+this.arg4);
+            }
+
 
 	}// Fin clase Barco
 
 	public static class Barril {
 		int entityId;
+		String entityType;
 		int x;
 		int y;
-		int arg1;// Orientacion de rotacion
-		int arg2;// Velocidad barco
-		int arg3;// Stock de ron barco
-		int arg4;// 1 si controlo barco, 0 si no
+		int arg1;// Cantidad de ron del barril
+	
 
-		public Barril(int id, int x, int y, int arg1, int arg2, int arg3, int arg4) {
-			this.entityId = id;
-			this.x = x;
-			this.y = y;
-			this.arg1 = arg1;
-			this.arg2 = arg2;
-			this.arg3 = arg3;
-			this.arg4 = arg4;
-		}
+		public Barril(int id, String tipo, int x, int y, int arg1) {
+            this.entityId = id;
+            this.entityType = tipo;
+            this.x = x; 
+            this.y = y; 
+            this.arg1 = arg1;
+        }
+
 
 		public int getPosX() {
 			return this.x;
@@ -324,26 +336,27 @@ class Player {
 		public int getCantRon() {
 			return arg1;
 		}
+		public void mostrarBarril (){
+            System.err.println("Barril " + this.entityId +" X:"+this.x+" Y:"+this.y+" Arg1:"+
+            this.arg1);
+            }
+
 
 	}// Fin clase Barril
 
 	public static class Mina {
 		int entityId;
+		String entityType; //MINE
 		int x;
 		int y;
-		int arg1;// Orientacion de rotacion
-		int arg2;// Velocidad barco
-		int arg3;// Stock de ron barco
-		int arg4;// 1 si controlo barco, 0 si no
+		
 
-		public Mina(int id, int x, int y, int arg1, int arg2, int arg3, int arg4) {
+		public Mina(int id,  String tipo,int x, int y) {
 			this.entityId = id;
+			this.entityType = tipo;
 			this.x = x;
 			this.y = y;
-			this.arg1 = arg1;
-			this.arg2 = arg2;
-			this.arg3 = arg3;
-			this.arg4 = arg4;
+			
 		}
 
 		public int getPosX() {
@@ -353,8 +366,7 @@ class Player {
 		public int getPosY() {
 			return this.y;
 		}
-
-		public int getId() {
+				public int getId() {
 			return this.entityId;
 		}
 
@@ -362,21 +374,19 @@ class Player {
 	
 	public static class Cannonball {
 		int entityId;
+		String entityType; //CANNONBALL
 		int x;
 		int y;
-		int arg1;// Orientacion de rotacion
-		int arg2;// Velocidad barco
-		int arg3;// Stock de ron barco
-		int arg4;// 1 si controlo barco, 0 si no
-
-		public Cannonball(int id, int x, int y, int arg1, int arg2, int arg3, int arg4) {
-			this.entityId = id;
-			this.x = x;
-			this.y = y;
-			this.arg1 = arg1;
-			this.arg2 = arg2;
-			this.arg3 = arg3;
-			this.arg4 = arg4;
+		int arg1;// el ID de entidad de la nave que disparó esta bola de cañón
+        int arg2;//el número de vueltas antes del impacto (1 significa que la bala de cañón aterrizará al final del turno actual)
+      
+     	public Cannonball(int id, String tipo, int x, int y, int arg1, int arg2) {
+            this.entityId = id;
+            this.entityType = tipo;
+            this.x = x;
+            this.y = y;
+            this.arg1 = arg1;
+            this.arg2 = arg2;
 		}
 
 		public int getPosX() {
