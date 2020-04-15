@@ -24,6 +24,7 @@ class Player {
 		listaEstadosFuturos=new ArrayList<EstadoFuturo>();
 		barcosContrarios=new ArrayList<Barco>();
 		int cantTurnos=0;
+		boolean dispara=false;
 		
 		while (true) {
 			int myShipCount = in.nextInt();// cantidad de barcos que tengo controlados
@@ -54,27 +55,22 @@ class Player {
 						}
 
 					}
-					
-
-					
 				
 				if (entityType.equals("BARREL")) {
 					Barril unBarril = new Barril(entityId,entityType, x, y, arg1);
 					listaBarriles.add(unBarril);
-					unBarril.mostrarBarril();
 				}
 				
 				if (entityType.equals("MINE")) {
 					Mina unaMina= new Mina(entityId,entityType,x,y);
 					listaMinas.add(unaMina);
-					unaMina.mostrarMina();
 				}
 				
 				if (entityType.equals("CANNONBALL")) {
 					unaBalaDisparada= new Cannonball(entityId,entityType, x, y, arg1, arg2);
 				}
 				
-			} // Fin for entityCount
+			}
 
 			for (int i = 0; i < myShipCount; i++) {
 				int posXBarcoRow=barcos[i].getPosX();
@@ -82,7 +78,7 @@ class Player {
 	
 			        if(posXBarcoRow % 2 == 0 ) { // r par 0<x<22
 			//  [[+1,  0], [ 0, -1], [-1, -1], [-1,  0], [-1, +1], [ 0, +1]],
-  //pos actual 20x 3y
+
                     if(posXBarcoRow+1<=22) {
                         listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow+1, posYBarcoCol));
                     }
@@ -90,7 +86,7 @@ class Player {
                         listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow, posYBarcoCol-1));
                     }
                     if(posXBarcoRow-1>=0 && posYBarcoCol+1<=20) {
-                       listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow-1, posYBarcoCol-1));
+                       listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow-1, posYBarcoCol+1));
                     }
                     if(posXBarcoRow-1>=0) {
                         listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow-1, posYBarcoCol));
@@ -123,50 +119,49 @@ class Player {
             
                 if(posXBarcoRow+1<=22 && posYBarcoCol+1<=20) {
                     listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow+1, posYBarcoCol+1));
-                }
+				}
+				
             }
-				
-				
-				EstadoFuturo mejorEstado=null;
+			
+				EstadoFuturo mejorEstado=new EstadoFuturo(listaBarriles.get(0).getPosX(),listaBarriles.get(0).getPosY()); // Le pongo un barril cualquiera, cuando no tiene ninguno cerca
 				Iterator iterator= listaEstadosFuturos.iterator();
 				double mejorHeuristica = 10000;
-				
+				float heuristica=100000;
 				for (int j = 0; j <listaEstadosFuturos.size(); j++) {
 					EstadoFuturo unEstado= (EstadoFuturo) iterator.next(); // recorremos el array de estados
+					System.err.println("Estados vecinos:"+listaEstadosFuturos.size()+ " Estado:  "+unEstado.getPosX()+" .."+unEstado.getPosY());
+					//Si hay minas en mis vecinos,elimino ese estado
+					if(cantTurnos==4 ){
+							System.out.println("FIRE " + barcosContrarios.get(i).getPosX() + " " + barcosContrarios.get(i).getPosY());
+							System.out.println("MINE");
+							cantTurnos=0;
+					}
+					boolean estadoConMina= unEstado.tieneMina(listaMinas);
+					if(!estadoConMina){
+									
+					heuristica=unEstado.getHeuristica(cantTurnos,listaBarriles, listaMinas, unaBalaDisparada); //calculamos la heuristica
+			
 				
-					float heuristica=unEstado.getHeuristica(listaBarriles, listaMinas, unaBalaDisparada); //calculamos la heuristica
-					System.err.println("heuristica: "+heuristica + "mejorHeuristica: "+ mejorHeuristica);
-		
-					if (heuristica < mejorHeuristica) {
+					}
+				if (heuristica < mejorHeuristica) {
 						mejorHeuristica = heuristica;
 						mejorEstado=unEstado;
 					}
-					
+				
 				}
+				
 				int movimientoX=mejorEstado.getPosX();
 				int movimientoY=mejorEstado.getPosY();
-				listaEstadosFuturos.clear();
-				if (mejorHeuristica==-10000 && cantTurnos==4){
-					cantTurnos++;
-					//if(cantTurnos==4){
-
-					System.err.println("Cant Turnos: "+cantTurnos);
-		
-					System.out.println("FIRE " + barcosContrarios.get(i).getPosX() + " " + barcosContrarios.get(i).getPosY());
-					cantTurnos=0;
-					barcos[i].moverBarco(movimientoX, movimientoY);
-					
-					//}
-				}else{
-					barcos[i].moverBarco(movimientoX, movimientoY);
-				}
+				barcos[i].moverBarco(movimientoX, movimientoY);
+			
 				cantTurnos++;
 
 				
 			} // Fin for barcos
 			
 			listaBarriles.clear();
-			
+			listaEstadosFuturos.clear();
+				
 			listaMinas.clear();
 			barcosContrarios.clear();
 			barcos=null;
@@ -208,100 +203,99 @@ class Player {
 		
 		public void mostrarEstado (){
             System.err.println("Estado "+" X:"+this.x+" Y:"+this.y);
-            }
+			}
 
-		public float getHeuristica(ArrayList listaBarriles, ArrayList listaMinas, Cannonball unaBala) {
+		public boolean tieneMina(ArrayList listaMinas){
 
-			this.miHeuristica = calcularMiHeuristica(listaBarriles, listaMinas,unaBala);
+			boolean miPosTieneMina = false;
+			for (Iterator iterator = listaMinas.iterator(); iterator.hasNext();) {
+				if(!miPosTieneMina){
+					Mina mina = (Mina) iterator.next();
+					int posMinaX= mina.getPosX();
+					int posMinaY=mina.getPosY();
+					if (posMinaX == this.x && posMinaY== this.y){
+						miPosTieneMina=true;
+					}
+				}
+								
+			}
+			return miPosTieneMina;
+		}
+
+		public float getHeuristica(int cantTurnos,ArrayList listaBarriles, ArrayList listaMinas, Cannonball unaBala) {
+
+			this.miHeuristica = calcularMiHeuristica(cantTurnos,listaBarriles, listaMinas,unaBala);
 					
 			return miHeuristica;
 		}
 
-		private float calcularMiHeuristica(ArrayList<Barril> listaBarriles, ArrayList<Mina> listaMinas, Cannonball unaBala) {
+		private float calcularMiHeuristica(int cantTurnos,ArrayList<Barril> listaBarriles, ArrayList<Mina> listaMinas, Cannonball unaBala) {
 			/*Metodo que calcula la heuristica del futuro posible estado considerando:
 			 * distancia entre el barril mas cercano sumado al que mas Ron tenga*/
-			float resultadoFinal = 10000;
+	
+			 float resultadoFinal = 10000;
 			boolean miPosTieneMina = false;
-			boolean miPosDispara=false;
-			// for (Iterator iterator = listaMinas.iterator(); iterator.hasNext();) {
-			// 	Mina mina = (Mina) iterator.next();
-			// 	int posMinaX= mina.getPosX();
-			// 	int posMinaY=mina.getPosY();
-				
-			// 	Cubo cuboMina = oddr_to_cube(posMinaX, posMinaY);
-			// 	Cubo cuboPosFuturoEstado = oddr_to_cube(this.x, this.y);
-				
-			// 	float distancia=getDistanciaCubos(cuboPosFuturoEstado, cuboMina);
-			// 	System.err.println("Distancia mina: "+distancia);
-
-				
-			// 	if(distancia<3) {
-	 		// 			miPosTieneMina = true;
-			// 	}
-			// }	
-			// for (Iterator iterator = barcosContrarios.iterator(); iterator.hasNext();) {
-			// 	Barco oponente = (Barco) iterator.next();
-			// 	int posBarcoX= oponente.getPosX();
-			// 	int posBarcoY=oponente.getPosY();
-				
-			// 	Cubo cuboOponente = oddr_to_cube(posBarcoX, posBarcoY);
-			// 	Cubo cuboPosFuturoEstado = oddr_to_cube(this.x, this.y);
-				
-			// 	float distancia=getDistanciaCubos(cuboPosFuturoEstado, cuboOponente);
-			// 	System.err.println("Distancia otro barco: "+distancia);
-
-				
-			// 	if(distancia<10) {
-			// 			 miPosDispara = true;
-			// 		//	System.out.println("FIRE " + posBarcoX + " " + posBarcoY);
-			// 			 resultadoFinal = -10000;
+			boolean miPosTieneBala=false;
+			for (Iterator iterator = listaMinas.iterator(); iterator.hasNext();) {
+			 	Mina mina = (Mina) iterator.next();
+			 	int posMinaX= mina.getPosX();
+			 	int posMinaY=mina.getPosY();
+				Cubo cuboMina = oddr_to_cube(posMinaX, posMinaY);
+				Cubo cuboPosFuturoEstado = oddr_to_cube(this.x, this.y);
+				float distancia=getDistanciaCubos(cuboPosFuturoEstado, cuboMina);
+				if(distancia<3) {
+	 		 			miPosTieneMina = true;
+				}
+			}
 			
-			// 	}
-				
-			// }	
-
-				// System.err.println("MINA, THIS X "+this.x+" THIS Y"+this.y);
-				// //if ((this.x == posMinaX && (this.y == posMinaY+1 ||this.y == posMinaY-1)) || (this.y == posMinaY && (this.x == posMinaX+1 ||this.x == posMinaX-1))   ) {
-				// 	if ((this.x -2 == posMinaX && (this.y == posMinaY+1 ||this.y == posMinaY-1)) || (this.y == posMinaY && (this.x == posMinaX+1 ||this.x == posMinaX-1))   ) {
-					
-				// System.err.println("tengo mina ");
-				// 	//resultadoFinal = 10000;
-				// 	miPosTieneMina = true;
-				// }
-			 // Fin for minas
-			
-	/*		if(unaBala!=null) {
+				if(unaBala!=null) {
 				if (this.x == unaBala.getPosX() && this.y == unaBala.getPosY()) {
-					resultadoFinal = 10000;
 					miPosTieneBala = true;
 				}
 			}
-		*/	
-	//	System.err.println("!miPosTieneMina "+!miPosTieneMina+"!miPosTieneBala"+ !miPosTieneBala);
+		// if(cantTurnos=4){
+			
+			
+		// 	System.err.println("Cant Turnos: "+cantTurnos);
+		// 	for (Iterator iterator = barcosContrarios.iterator(); iterator.hasNext();) {
+		// 		Barco oponente = (Barco) iterator.next();
+		// 		int posBarcoX= oponente.getPosX();
+		// 		int posBarcoY=oponente.getPosY();
+				
+		// 		Cubo cuboOponente = oddr_to_cube(posBarcoX, posBarcoY);
+		// 		Cubo cuboPosFuturoEstado = oddr_to_cube(this.x, this.y);
+				
+		// 		float distancia=getDistanciaCubos(cuboPosFuturoEstado, cuboOponente);
+		// 		System.err.println("Distancia otro barco: "+distancia);
 
-			if (!miPosTieneMina) {
-// && !miPosTieneBala
+				
+		// 		if(distancia<10) {
+		// 			System.err.println("DISPARA");
+		// 		//	System.out.println("FIRE " + posBarcoX + " " + posBarcoY);
+		// 		resultadoFinal= -100;
+					
+			
+		// 		}
+				
+		// 	}	
+		// }
+
+			if (!miPosTieneMina && !miPosTieneBala) {
 				for (Iterator iterator = listaBarriles.iterator(); iterator.hasNext();) {
 					Barril barrilActual = (Barril) iterator.next();
 
 					int posXBarril = barrilActual.getPosX();
-					int posYBarril = barrilActual.getPosY();
-					int cantRon = barrilActual.getCantRon();
-				
+					int posYBarril = barrilActual.getPosY();	
 					Cubo cuboBarril = oddr_to_cube(posXBarril, posYBarril);
 					Cubo cuboPosFuturoEstado = oddr_to_cube(this.x, this.y);
 					
 					float distancia=getDistanciaCubos(cuboPosFuturoEstado, cuboBarril);
-
-				
-
-					float posibleHeuristica=distancia-cantRon;
+					float posibleHeuristica=distancia;
 				
 					if(resultadoFinal>posibleHeuristica) {
 						resultadoFinal=posibleHeuristica;
 					}
 
-				 // Fin for barriles
 			}
 			} 
 		System.err.println("Resultado final: "+resultadoFinal);
