@@ -80,32 +80,35 @@ class Player {
 				int posXBarcoRow=barcos[i].getPosX();
 				int posYBarcoCol=barcos[i].getPosY();
 	
-			        if(posXBarcoRow % 2 == 0 ) { // r par
-              //      {{+1,  0}, { 0, -1}, {-1, -1}, {-1,  0}, {-1, +1}, { 0, +1}};
-                    
-                    if(posXBarcoRow+1<=20) {
+			        if(posXBarcoRow % 2 == 0 ) { // r par 0<x<22
+			//  [[+1,  0], [ 0, -1], [-1, -1], [-1,  0], [-1, +1], [ 0, +1]],
+  
+                    if(posXBarcoRow+1<=22) {
                         listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow+1, posYBarcoCol));
                     }
                     if(posYBarcoCol-1>=0) {
                         listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow, posYBarcoCol-1));
                     }
-                    if(posXBarcoRow-1>=0 && posYBarcoCol+1<=22) {
+                    if(posXBarcoRow-1>=0 && posYBarcoCol+1<=20) {
                        listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow-1, posYBarcoCol-1));
                     }
                     if(posXBarcoRow-1>=0) {
                         listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow-1, posYBarcoCol));
                     }
 				
-                    if(posXBarcoRow-1>=0 && posYBarcoCol+1<=22) {
+                    if(posXBarcoRow-1>=0 && posYBarcoCol+1<=20) {
                         listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow-1, posYBarcoCol+1));
+					}
+					if(posYBarcoCol+1<=20) {
+                        listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow, posYBarcoCol+1));
                     }
 									
             }else{
-                //{{+1,  0}, {+1, -1}, { 0, -1}, {-1,  0}, { 0, +1}, {+1, +1}};
-                if(posXBarcoRow+1<=20) {
+                //[[+1,  0], [+1, -1], [ 0, -1], [-1,  0], [ 0, +1], [+1, +1]],
+                if(posXBarcoRow+1<=22) {
                     listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow+1, posYBarcoCol));
                 }
-                if(posXBarcoRow+1<=20 && posYBarcoCol-1>=0) {
+                if(posXBarcoRow+1<=22 && posYBarcoCol-1>=0) {
                     listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow+1, posYBarcoCol-1));
                 }
                 if(posYBarcoCol-1>=0) {
@@ -114,11 +117,11 @@ class Player {
                 if(posXBarcoRow-1>=0) {
                     listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow-1, posYBarcoCol));
                 }
-                if(posYBarcoCol+1<=22) {
+                if(posYBarcoCol+1<=20) {
                     listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow, posYBarcoCol+1));
                 }
             
-                if(posXBarcoRow+1>=0 && posYBarcoCol+1<=22) {
+                if(posXBarcoRow+1<=22 && posYBarcoCol+1<=20) {
                     listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow+1, posYBarcoCol+1));
                 }
             }
