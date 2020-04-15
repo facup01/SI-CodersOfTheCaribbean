@@ -82,7 +82,7 @@ class Player {
 	
 			        if(posXBarcoRow % 2 == 0 ) { // r par 0<x<22
 			//  [[+1,  0], [ 0, -1], [-1, -1], [-1,  0], [-1, +1], [ 0, +1]],
-  
+  //pos actual 20x 3y
                     if(posXBarcoRow+1<=22) {
                         listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow+1, posYBarcoCol));
                     }
@@ -96,8 +96,8 @@ class Player {
                         listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow-1, posYBarcoCol));
                     }
 				
-                    if(posXBarcoRow-1>=0 && posYBarcoCol+1<=20) {
-                        listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow-1, posYBarcoCol+1));
+                    if(posXBarcoRow-1>=0 && posYBarcoCol-1>=0) {
+                        listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow-1, posYBarcoCol-1));
 					}
 					if(posYBarcoCol+1<=20) {
                         listaEstadosFuturos.add(new EstadoFuturo(posXBarcoRow, posYBarcoCol+1));
@@ -147,8 +147,8 @@ class Player {
 				int movimientoY=mejorEstado.getPosY();
 				listaEstadosFuturos.clear();
 				if (mejorHeuristica==-10000 && cantTurnos==4){
-			cantTurnos++;
-//				 if(cantTurnos==4){
+					cantTurnos++;
+					//if(cantTurnos==4){
 
 					System.err.println("Cant Turnos: "+cantTurnos);
 		
@@ -156,9 +156,8 @@ class Player {
 					cantTurnos=0;
 					barcos[i].moverBarco(movimientoX, movimientoY);
 					
-			//	 }
+					//}
 				}else{
-
 					barcos[i].moverBarco(movimientoX, movimientoY);
 				}
 				cantTurnos++;
