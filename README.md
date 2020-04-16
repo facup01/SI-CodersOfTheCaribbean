@@ -15,6 +15,11 @@ class Player {
 
         int shipX = 0;
         int shipY = 0;
+        
+        int shipContX = 0;
+        int shipContY = 0;
+        
+        int cantTurnos = 0;
 
         // en filas par
         int[][] even_oddr_directions = {{+1,  0}, { 0, -1}, {-1, -1}, {-1,  0}, {-1, +1}, { 0, +1}};
@@ -64,10 +69,15 @@ class Player {
                 int arg4 = in.nextInt();
 
 
-                if(entityType.equals("SHIP")){
+                if(entityType.equals("SHIP") && arg4 == 1) {
                     shipX = x;
                     shipY = y;
                     //System.err.println("Coordenada SHIP x:" + shipX + "y: " + shipY);
+                } 
+                
+                if(entityType.equals("SHIP") && arg4 == 0) {
+                    shipContX = x;
+                    shipContY = y;
                 }
 
                 if( entityType.equals("BARREL") ) {
@@ -158,6 +168,15 @@ class Player {
                
             if ( target < Manager.numberOfBarrelsSchedule() ) {
                 // en primera instancia nos manda el primer barril del mejor schedule
+                    
+                if ( cantTurnos == 4 ) {
+                    System.out.println("FIRE " + shipContX + " " + shipContY);
+                    cantTurnos = 0;
+                } else {
+                    cantTurnos++;
+                }
+                
+                
                  xProxDestino = Manager.getBarrelTarget(target).getX();
                  yProxDestino = Manager.getBarrelTarget(target).getY();
                
@@ -167,15 +186,37 @@ class Player {
                   target++;
                   
                   if ( target < Manager.numberOfBarrelsSchedule() ) {
+                      
+                    if ( cantTurnos == 4 ) {
+                        System.out.println("FIRE " + shipContX + " " + shipContY);
+                        cantTurnos = 0;
+                    } else {
+                        cantTurnos++;
+                    }  
+                      
+                      
                     xProxDestino = Manager.getBarrelTarget(target).getX();
                     yProxDestino = Manager.getBarrelTarget(target).getY();
                   
                   } else {
+                      
+                        if ( cantTurnos == 4 ) {
+                            System.out.println("FIRE " + shipContX + " " + shipContY);
+                            cantTurnos = 0;
+                        } else {
+                            cantTurnos++;
+                        }
                         xProxDestino = Utility.randomInt(0, 22);
                         yProxDestino = Utility.randomInt(0, 20);
                      }
                }
             } else {
+                if ( cantTurnos == 4 ) {
+                    System.out.println("FIRE " + shipContX + " " + shipContY);
+                    cantTurnos = 0;
+                } else {
+                    cantTurnos++;
+                }
                 xProxDestino = Utility.randomInt(0, 22);
                 yProxDestino = Utility.randomInt(0, 20);
             }
@@ -203,10 +244,14 @@ class Player {
             //             movY = yNeighbour;
             //          }
             // }
-            
-
+            if ( cantTurnos == 4 ) {
+                System.out.println("FIRE " + shipContX + " " + shipContY);
+                cantTurnos = 0;
+            } else {
+                cantTurnos++;
+            }
            
-
+            
             //System.out.println("MOVE " + movX + " " + movY);
             System.out.println("MOVE " + xProxDestino + " " + yProxDestino);
 
