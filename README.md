@@ -1,5 +1,3 @@
-# SI-CodersOfTheCaribbean
-
 import java.util.*;
 import java.io.*;
 import java.math.*;
@@ -28,18 +26,24 @@ class Player {
         //SIMULATED-ANNEALING
 
         // Temperatura inicial
-        double temp = 1;
+        double temp = 100000;
 
         //  Tasa de enfriamiento
-        //double coolingRate = 0.003;
-        double coolingRate = 0.03;
+        double coolingRate = 0.003;
 
-        int movX = 0;
+        int movX = 1;
         int movY = 0;
 
         int xNeighbour;
         int yNeighbour;
         double minDistancia;
+        
+        boolean flag = true;
+        
+        int xProxDestino;
+        int yProxDestino;
+        
+        int target = 1;
 
         // game loop
         while (true) {
@@ -62,95 +66,126 @@ class Player {
                 if(entityType.equals("SHIP")){
                     shipX = x;
                     shipY = y;
+                    //System.err.println("Coordenada SHIP x:" + shipX + "y: " + shipY);
                 }
 
                 if( entityType.equals("BARREL") ) {
 
                     Manager.addBarrel(new Barrel(x, y, arg1));
+                    //System.err.println("Coordenada Barrel x:" + x + "y: " + y);
 
                 }
             }
-
-
-
-            //create schedule with position current of ship, origin point schedule, emulated how Barrel
-            Schedule possibleWay = new Schedule(new Barrel(shipX, shipY, 0));
-
-            //Se genera un schedule de barriles a recorrer aleatoriamente
-            possibleWay.generateIndividual();
-
-            // We would like to keep track if the best solution
-            // Assume best solution is the current solution
-            Schedule best = new Schedule(possibleWay.getSchedule());
-
-            // Loop until system has cooled
-            while (temp > 0) {
-                // Create new neighbour schedule
-                Schedule newSolution = new Schedule(possibleWay.getSchedule());
-
-                // Get random positions in the schedule
-                // First element of schedule always is the barrel position
-                int barrelPos1 = Utility.randomInt(1 , newSolution.scheduleSize());
-                int barrelPos2 = Utility.randomInt(1 , newSolution.scheduleSize());
-
-                //to make sure that stepPos1 and stepPos2 are different
-                while(barrelPos1 == barrelPos2) {barrelPos2 = Utility.randomInt(1 , newSolution.scheduleSize());}
-
-                // Get the barrels at selected positions in the schedule
-                Barrel barrelSwap1 = newSolution.getBarrel(barrelPos1);
-                Barrel barrelSwap2 = newSolution.getBarrel(barrelPos2);
-
-                // Swap them
-                newSolution.setBarrel(barrelPos2, barrelSwap1);
-                newSolution.setBarrel(barrelPos1, barrelSwap2);
-
-                // Get energy of solutions
-                int currentDistance   = possibleWay.getTotalDistance();
-                int neighbourDistance = newSolution.getTotalDistance();
-
-
-
-                // Decide if we should accept the neighbour
-                double rand = Utility.randomDouble();
-                if (Utility.acceptanceProbability(currentDistance, neighbourDistance, temp) > rand) {
-                    possibleWay = new Schedule(newSolution.getSchedule());
+            
+            if ( flag ) {
+                
+                // con esto aseguramos que el planificador va a calcularse una sola vez.
+                flag = false;
+                
+                
+                //create schedule with position current of ship, origin point schedule, emulated how Barrel
+                Schedule possibleWay = new Schedule(new Barrel(shipX, shipY, 0));
+    
+                //Se genera un schedule de barriles a recorrer aleatoriamente
+                possibleWay.generateIndividual();
+    
+                // We would like to keep track if the best solution
+                // Assume best solution is the current solution
+                Schedule best = new Schedule(possibleWay.getSchedule());
+    
+                // Loop until system has cooled
+                while (temp > 1) {
+                
+                    
+                    // Create new neighbour schedule
+                    Schedule newSolution = new Schedule(possibleWay.getSchedule());
+    
+                    // Get random positions in the schedule
+                    // First element of schedule always is the barrel position
+                    int barrelPos1 = Utility.randomInt(1 , newSolution.scheduleSize());
+                    int barrelPos2 = Utility.randomInt(1 , newSolution.scheduleSize());
+    
+                    //to make sure that stepPos1 and stepPos2 are different
+                    while(barrelPos1 == barrelPos2) {barrelPos2 = Utility.randomInt(1 , newSolution.scheduleSize());}
+    
+                    // Get the barrels at selected positions in the schedule
+                    Barrel barrelSwap1 = newSolution.getBarrel(barrelPos1);
+                    Barrel barrelSwap2 = newSolution.getBarrel(barrelPos2);
+    
+                    // Swap them
+                    newSolution.setBarrel(barrelPos2, barrelSwap1);
+                    newSolution.setBarrel(barrelPos1, barrelSwap2);
+    
+                    // Get energy of solutions
+                    int currentDistance   = possibleWay.getTotalDistance();
+                    int neighbourDistance = newSolution.getTotalDistance();
+    
+    
+    
+                    // Decide if we should accept the neighbour
+                    double rand = Utility.randomDouble();
+                    if (Utility.acceptanceProbability(currentDistance, neighbourDistance, temp) > rand) {
+                        possibleWay = new Schedule(newSolution.getSchedule());
+                    }
+    
+                    // Keep track of the best solution found
+                    if (possibleWay.getTotalDistance() < best.getTotalDistance()) {
+                        best = new Schedule(possibleWay.getSchedule());
+                    }
+                    
+                    
+                    // Cool system
+                    temp *= 1 - coolingRate;
+                    
                 }
-
-                // Keep track of the best solution found
-                if (possibleWay.getTotalDistance() < best.getTotalDistance()) {
-                    best = new Schedule(possibleWay.getSchedule());
-                }
-
-                // Cool system
-                temp *= 1 - coolingRate;
+                
+                
+                // en el schedule best nos queda el mejor recorrido para recorrer los barriles
+                Manager.setShortest(best.getSchedule());
+            
             }
+    
+            // en primera instancia nos manda el primer barril del mejor schedule
+             xProxDestino = Manager.getBarrelTarget(target).getX();
+             yProxDestino = Manager.getBarrelTarget(target).getY();
+           
+           // si el proximo destino no esta en la lista de manager es porque hubo un cambio en el entorno y hay que movernos al siguiente target
+           if ( !(Manager.verificarDestino(xProxDestino, yProxDestino))) {
+               
+              target++;
+              xProxDestino = Manager.getBarrelTarget(target).getX();
+              yProxDestino = Manager.getBarrelTarget(target).getY();
+              
+           }
+               
+                       
 
-
-
-            minDistancia = Utility.distance(shipX, shipY, best.getBarrel(1));
+            // esta es la distancia actual del barco al barril mas cercano, dentro del boocle se busca el vecino que mas nos acerca a esa posicion
+            minDistancia = Utility.distance(shipX, shipY, Manager.getBarrelTarget(target));
 
             if(shipX % 2 == 0 ) {
                 for ( int w = 0 ; w < 6 ; w++ ) {
-                    xNeighbour = shipX + even_oddr_directions[0][0];
-                    yNeighbour = shipY + even_oddr_directions[0][1];
-                    if( minDistancia > Utility.distance(xNeighbour, yNeighbour, best.getBarrel(1))) {
+                    xNeighbour = shipX + even_oddr_directions[w][0];
+                    yNeighbour = shipY + even_oddr_directions[w][1];
+                    if( minDistancia > Utility.distance(xNeighbour, yNeighbour, best.getBarrel(target))) {
                         movX = xNeighbour;
                         movY = yNeighbour;
                     }
                 }
             } else {
                 for ( int w = 0 ; w < 6 ; w++ ) {
-                    xNeighbour = odd_oddr_directions[0][0];
-                    yNeighbour = odd_oddr_directions[0][1];
-                     if( minDistancia > Utility.distance(xNeighbour, yNeighbour, best.getBarrel(1))) {
+                    xNeighbour = odd_oddr_directions[w][0];
+                    yNeighbour = odd_oddr_directions[w][1];
+                     if( minDistancia > Utility.distance(xNeighbour, yNeighbour, best.getBarrel(target))) {
                         movX = xNeighbour;
                         movY = yNeighbour;
                      }
             }
 
-
+           
 
             System.out.println("MOVE " + movX + " " + movY);
+            
 
 
             Manager.clearManager();
@@ -165,9 +200,9 @@ class Player {
 }
 
 
-//  ################### SCHEDULE ###################
-//  ################### SCHEDULE ###################
-//  ################### SCHEDULE ###################
+// ################### SCHEDULE ###################
+// ################### SCHEDULE ###################
+// ################### SCHEDULE ###################
 
 class Schedule{
 
@@ -286,6 +321,7 @@ class Manager {
 
     // Holds our barrels
     private static ArrayList<Barrel> barrelsAvailable = new ArrayList<Barrel>();
+    private static ArrayList<Barrel> shortest = new ArrayList<Barrel>();
 
     /**
 	 * Adds a Barrel Available
@@ -318,7 +354,25 @@ class Manager {
 	public static void clearManager(){
 	    barrelsAvailable.clear();
 	}
-
+	
+	
+	public static void setShortest(ArrayList<Barrel> short) {
+	    this.shortest = (ArrayList<Barrel>) short.clone();
+	}
+	
+	public static Barrel getBarrelTarget(int index) {
+	    return this.shortest.get(index);
+	}
+	
+	public static boolean verificarDestino(int x, int y){
+	    for( int i = 0 ; i < barrelsAvailable.size() ; i++ {
+	        if ( x == barrelsAvailable.get(i).getX() &&  y == barrelsAvailable.get(i).getY() ) {
+	            return true;
+	        }
+	    }
+	    
+	    return false;
+	}
 }
 
 
@@ -361,7 +415,6 @@ class Barrel {
 //  ################### UTILITY ###################
 
 class Utility {
-
 
 	/**
 	 * Computes and returns the Euclidean distance between ship and barrel
@@ -416,5 +469,7 @@ class Utility {
 		double d = min + r.nextDouble() * (max - min);
 		return (int)d;
 	}
+	   
+	    
 }
 
