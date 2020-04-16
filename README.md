@@ -29,7 +29,8 @@ class Player {
         double temp = 100000;
 
         //  Tasa de enfriamiento
-        double coolingRate = 0.003;
+        //double coolingRate = 0.003;
+         double coolingRate = 0.003;
 
         int movX = 1;
         int movY = 0;
@@ -88,6 +89,9 @@ class Player {
     
                 //Se genera un schedule de barriles a recorrer aleatoriamente
                 possibleWay.generateIndividual();
+                
+                
+                System.err.println("distancia a recorrer con recorrido aleatorio " + possibleWay.getTotalDistance());
     
                 // We would like to keep track if the best solution
                 // Assume best solution is the current solution
@@ -142,50 +146,69 @@ class Player {
                 
                 // en el schedule best nos queda el mejor recorrido para recorrer los barriles
                 Manager.setShortest(best.getSchedule());
+                
+                System.err.println("distancia a recorrer con recorrido schedule " + best.getTotalDistance());
+                
+                // for (int i = 0 ; i < Manager.numberOfBarrelsSchedule() ; i++) {
+                //     System.err.println("El plan en pos " + i + " es " + Manager.getBarrelTarget(i));
+                // }
             
             }
-    
-            // en primera instancia nos manda el primer barril del mejor schedule
-             xProxDestino = Manager.getBarrelTarget(target).getX();
-             yProxDestino = Manager.getBarrelTarget(target).getY();
-           
-           // si el proximo destino no esta en la lista de manager es porque hubo un cambio en el entorno y hay que movernos al siguiente target
-           if ( !(Manager.verificarDestino(xProxDestino, yProxDestino))) {
                
-              target++;
-              xProxDestino = Manager.getBarrelTarget(target).getX();
-              yProxDestino = Manager.getBarrelTarget(target).getY();
-              
-           }
+               
+            if ( target < Manager.numberOfBarrelsSchedule() ) {
+                // en primera instancia nos manda el primer barril del mejor schedule
+                 xProxDestino = Manager.getBarrelTarget(target).getX();
+                 yProxDestino = Manager.getBarrelTarget(target).getY();
+               
+               // si el proximo destino no esta en la lista de manager es porque hubo un cambio en el entorno y hay que movernos al siguiente target
+               if ( !(Manager.verificarDestino(xProxDestino, yProxDestino))) {
+                   
+                  target++;
+                  
+                  if ( target < Manager.numberOfBarrelsSchedule() ) {
+                    xProxDestino = Manager.getBarrelTarget(target).getX();
+                    yProxDestino = Manager.getBarrelTarget(target).getY();
+                  
+                  } else {
+                        xProxDestino = Utility.randomInt(0, 22);
+                        yProxDestino = Utility.randomInt(0, 20);
+                     }
+               }
+            } else {
+                xProxDestino = Utility.randomInt(0, 22);
+                yProxDestino = Utility.randomInt(0, 20);
+            }
                
                        
 
             // esta es la distancia actual del barco al barril mas cercano, dentro del boocle se busca el vecino que mas nos acerca a esa posicion
-            minDistancia = Utility.distance(shipX, shipY, Manager.getBarrelTarget(target));
+            // minDistancia = Utility.distance(shipX, shipY, Manager.getBarrelTarget(target));
 
-            if(shipX % 2 == 0 ) {
-                for ( int w = 0 ; w < 6 ; w++ ) {
-                    xNeighbour = shipX + even_oddr_directions[w][0];
-                    yNeighbour = shipY + even_oddr_directions[w][1];
-                    if( minDistancia > Utility.distance(xNeighbour, yNeighbour, best.getBarrel(target))) {
-                        movX = xNeighbour;
-                        movY = yNeighbour;
-                    }
-                }
-            } else {
-                for ( int w = 0 ; w < 6 ; w++ ) {
-                    xNeighbour = odd_oddr_directions[w][0];
-                    yNeighbour = odd_oddr_directions[w][1];
-                     if( minDistancia > Utility.distance(xNeighbour, yNeighbour, best.getBarrel(target))) {
-                        movX = xNeighbour;
-                        movY = yNeighbour;
-                     }
-            }
+            // if(shipX % 2 == 0 ) {
+            //     for ( int w = 0 ; w < 6 ; w++ ) {
+            //         xNeighbour = shipX + even_oddr_directions[w][0];
+            //         yNeighbour = shipY + even_oddr_directions[w][1];
+            //         if( minDistancia > Utility.distance(xNeighbour, yNeighbour, Manager.getBarrelTarget(target))) {
+            //             movX = xNeighbour;
+            //             movY = yNeighbour;
+            //         }
+            //     }
+            // } else {
+            //     for ( int w = 0 ; w < 6 ; w++ ) {
+            //         xNeighbour = odd_oddr_directions[w][0];
+            //         yNeighbour = odd_oddr_directions[w][1];
+            //          if( minDistancia > Utility.distance(xNeighbour, yNeighbour, Manager.getBarrelTarget(target))) {
+            //             movX = xNeighbour;
+            //             movY = yNeighbour;
+            //          }
+            // }
+            
 
            
 
-            System.out.println("MOVE " + movX + " " + movY);
-            
+            //System.out.println("MOVE " + movX + " " + movY);
+            System.out.println("MOVE " + xProxDestino + " " + yProxDestino);
 
 
             Manager.clearManager();
@@ -197,7 +220,7 @@ class Player {
     }
 
 
-}
+//}
 
 
 // ################### SCHEDULE ###################
@@ -356,16 +379,26 @@ class Manager {
 	}
 	
 	
-	public static void setShortest(ArrayList<Barrel> short) {
-	    this.shortest = (ArrayList<Barrel>) short.clone();
+	public static void setShortest(ArrayList<Barrel> shortested) {
+	    //System.err.println("la longitud de la lista ed" + shortested.size());
+	    shortest = (ArrayList<Barrel>) shortested.clone();
+	    //System.err.println("la longitud de la lista " + shortest.size());
+	    
 	}
 	
 	public static Barrel getBarrelTarget(int index) {
-	    return this.shortest.get(index);
+	    System.err.println("el indice es " + index);
+	    System.err.println("la longitud es " + shortest.size());
+	    return shortest.get(index);
 	}
 	
+	public static int numberOfBarrelsSchedule(){
+		return shortest.size();
+	}
+	
+	
 	public static boolean verificarDestino(int x, int y){
-	    for( int i = 0 ; i < barrelsAvailable.size() ; i++ {
+	    for( int i = 0 ; i < barrelsAvailable.size() ; i++ ){
 	        if ( x == barrelsAvailable.get(i).getX() &&  y == barrelsAvailable.get(i).getY() ) {
 	            return true;
 	        }
